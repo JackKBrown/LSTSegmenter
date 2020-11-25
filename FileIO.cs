@@ -4,15 +4,15 @@ using System.IO;
 
 namespace lewisstupidthingy
 {
-	class FileIO
+	public class FileIO
 	{
 		public FileIO()
 		{
 		}
 
-		public Dictionary<string, string> parseInput(string path)
+		public List<string> parseInput(string path)
 		{
-			Dictionary<string, string> nameRawPairs = new Dictionary<string, string>();
+			List<string> nameRawPairs = new List<string>();
 
 			if(File.Exists(path))
 			{
@@ -24,13 +24,7 @@ namespace lewisstupidthingy
 						// lines that start with # are treat as comments
 						if (string.IsNullOrEmpty(s)) continue;
 						if (s[0] == '#') continue;
-						string[] line = s.Split(new char[] { '-' }, 2);
-						if (line.Length != 2)
-						{
-							Console.WriteLine("couldn't get name and segment pair skipping line");
-							continue;
-						}
-						nameRawPairs.Add(line[0].Trim(), line[1].Trim());
+						nameRawPairs.Add(s);
 					}
 				}
 			}

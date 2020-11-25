@@ -5,6 +5,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace lewisstupidthingy
 {
@@ -13,14 +14,18 @@ namespace lewisstupidthingy
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		List<Segment> segmentOptions = new List<Segment>();
-		List<ListBoxItem> document = new List<ListBoxItem>();
+		private string DRAG_SYMBOL = "☰  ";
+		private string BASE_COLOUR = "#FFFFFF";
+		private string ACCENT_COLOUR = "#DDDDDD";
+		public List<Segment> SegmentOptions { get; set; } = new List<Segment>();
+		public List<ListBoxItem> Document { get; set; } = new List<ListBoxItem>();
 		FileIO fileIO = new FileIO();
+		BrushConverter bc = new BrushConverter();
 
 		public MainWindow()
 		{
 			InitializeComponent();
-			DocOptions.ItemsSource = segmentOptions;
+			DocOptions.ItemsSource = SegmentOptions;
 			DocOptions.MouseDoubleClick += new MouseButtonEventHandler(AddSegment_Click);
 			//DocContents.ItemsSource = document;
 
@@ -29,15 +34,15 @@ namespace lewisstupidthingy
 			//string segName1 = "sample segment";
 			//string sampleSeg1 = "go to [@planet a, planet b] and do [@thing a, thing b]";
 
-			Dictionary<string, string> rawSegments = loadFile();
+			List<string> rawSegments = loadFile();
 
-			foreach(var kvp in rawSegments)
+			foreach(var rs in rawSegments)
 			{
-				segmentOptions.Add(new Segment(kvp.Key, kvp.Value));
+				SegmentOptions.Add(new Segment(rs));
 			}
 		}
 
-		private Dictionary<string, string> loadFile()
+		private List<string> loadFile()
 		{
 			string path = "segments.txt";
 			if (!File.Exists(path))
@@ -90,7 +95,7 @@ namespace lewisstupidthingy
 		{
 			List<string> lines = new List<string>();
 			int j = 0;
-			foreach(ListBoxItem lbi in document)
+			foreach(ListBoxItem lbi in Document)
 			{
 				try
 				{
@@ -120,7 +125,7 @@ namespace lewisstupidthingy
 							return new string[0];
 						}
 					}
-					lines.Add(line);
+					lines.Add(line.Replace(DRAG_SYMBOL, ""));
 				}
 				catch(Exception exc)
 				{
@@ -135,12 +140,28 @@ namespace lewisstupidthingy
 		private ListBoxItem ParseSegment(Segment seg)
 		{
 			ListBoxItem newItem = new ListBoxItem();
+			//drag properties
+			newItem.AllowDrop = true;
+			newItem.Drop += new DragEventHandler(DocItem_Drop);
+			newItem.DragEnter += new DragEventHandler(DocItem_DragEnter);
+			newItem.DragLeave += new DragEventHandler(DocItem_DragLeave);
+
+			//containing stackpanel
 			StackPanel stackPanel = new StackPanel();
+			stackPanel.Height = 24;
+
+			//drag symbol
+			TextBlock dragBlock = new TextBlock();
+			dragBlock.Text = DRAG_SYMBOL;
+			dragBlock.MouseMove += new MouseEventHandler(DocItem_MouseMove);
+			stackPanel.Children.Add(dragBlock);
+
 			stackPanel.Orientation = Orientation.Horizontal;
 			foreach(string subsegment in seg.subSegments)
 			{
 				//skip empty subsegments
 				if (subsegment.Length == 0) continue;
+				
 				//subsegment is a dropdown box
 				if (subsegment[0] == '@')
 				{
@@ -159,6 +180,7 @@ namespace lewisstupidthingy
 				else if (subsegment[0] == '~')
 				{
 					TextBox textBox = new TextBox();
+					textBox.MinWidth = 30;
 					textBox.Text = subsegment.Replace("~", ""); ;
 					stackPanel.Children.Add(textBox);
 				}
@@ -171,9 +193,24 @@ namespace lewisstupidthingy
 				}
 			}
 			newItem.Content = stackPanel;
-			newItem.MouseDoubleClick += new MouseButtonEventHandler(documentContent_DoubleClick);
+			newItem.MouseRightButtonUp += new MouseButtonEventHandler(DocumentContentRemove_Click);
 			return newItem;
 		}
+
+		private void renderDocument()
+		{
+			documentContent.Items.Clear();
+			for(int i = 0; i<Document.Count; ++i)
+			{
+				if (i % 2 == 0) Document[i].Background = (Brush)bc.ConvertFrom(ACCENT_COLOUR);
+				else Document[i].Background = (Brush)bc.ConvertFrom(BASE_COLOUR);
+				documentContent.Items.Add(Document[i]);
+			}
+		}
+
+		//========================================================================
+		//user interaction functions
+		//========================================================================
 
 		private void AddSegment_Click(object sender, RoutedEventArgs e)
 		{
@@ -181,17 +218,68 @@ namespace lewisstupidthingy
 			if (DocOptions.SelectedIndex == -1) return;
 
 			ListBoxItem newItem = ParseSegment(DocOptions.SelectedItem as Segment);
-			document.Add(newItem);
+			Document.Add(newItem);
+			if (!(Document.Count%2==0)) newItem.Background = (Brush)bc.ConvertFrom(ACCENT_COLOUR);
+			//don't need to rerender here can just add item to the list
 			documentContent.Items.Add(newItem);
-			//documentContents.Children.Add(stackPanel);
 		}
 
-		private void documentContent_DoubleClick(object sender, MouseButtonEventArgs e)
+		private void DocItem_MouseMove(object sender, MouseEventArgs e)
+		{
+			TextBlock tb = sender as TextBlock;
+			ListBoxItem lbi = LogicalTreeHelper.GetParent(LogicalTreeHelper.GetParent(tb)) as ListBoxItem;
+			
+			if (lbi != null && e.LeftButton == MouseButtonState.Pressed)
+			{
+				int index = Document.IndexOf(lbi);
+				DragDrop.DoDragDrop(lbi, index.ToString(), DragDropEffects.Move);
+			}
+		}
+
+		private void DocItem_DragEnter(object sender, DragEventArgs e)
+		{
+			ListBoxItem lbi = sender as ListBoxItem;
+		}
+
+		private void DocItem_DragLeave(object sender, DragEventArgs e)
+		{
+			ListBoxItem lbi = sender as ListBoxItem;
+		}
+
+		private void DocItem_Drop(object sender, DragEventArgs e)
 		{
 			try
 			{
-				document.Remove(sender as ListBoxItem);
+				int indexDragged = int.Parse(e.Data.GetData(DataFormats.StringFormat) as string);
+				ListBoxItem lbiDragged = Document[indexDragged];
+				ListBoxItem lbiDropped = sender as ListBoxItem;
+				int indexDropped = Document.IndexOf(lbiDropped);
+				if (indexDragged > indexDropped)
+				{
+					Document.RemoveAt(indexDragged);
+					Document.Insert(indexDropped + 1, lbiDragged);
+				}
+				else if (indexDragged < indexDropped)
+				{
+					Document.Insert(indexDropped + 1, lbiDragged);
+					Document.RemoveAt(indexDragged);
+				}
+				renderDocument();
+			}
+			catch(Exception exc)
+			{
+				Console.WriteLine(exc.Message);
+				Console.WriteLine("do not recognise");
+			}
+		}
+
+		private void DocumentContentRemove_Click(object sender, MouseButtonEventArgs e)
+		{
+			try
+			{
+				Document.Remove(sender as ListBoxItem);
 				documentContent.Items.Remove(sender);
+				renderDocument();
 			}
 			catch(Exception exc)
 			{
@@ -219,7 +307,8 @@ namespace lewisstupidthingy
 
 		private void New_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-			//TODO
+			Document.Clear();
+			documentContent.Items.Clear();
 		}
 
 		private void Save_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -233,6 +322,22 @@ namespace lewisstupidthingy
 			string[] lines = ParseDocument();
 			string concatLines = "";
 			foreach(string line in lines)
+			{
+				concatLines += line + "\n";
+			}
+			System.Windows.Clipboard.SetText(concatLines);
+		}
+
+		private void Copy_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = Document.Count != 0;
+		}
+
+		private void Copy_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			string[] lines = ParseDocument();
+			string concatLines = "";
+			foreach (string line in lines)
 			{
 				concatLines += line + "\n";
 			}

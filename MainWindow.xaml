@@ -9,6 +9,7 @@
     <Window.CommandBindings>
         <CommandBinding Command="New" CanExecute="New_CanExecute" Executed="New_Executed" />
         <CommandBinding Command="Save" CanExecute="Save_CanExecute" Executed="Save_Executed" />
+        <CommandBinding Command="Copy" CanExecute="Copy_CanExecute" Executed="Copy_Executed" />
     </Window.CommandBindings>
 
     <DockPanel>
@@ -16,34 +17,27 @@
             <MenuItem Header="_File">
                 <MenuItem Command="New" />
                 <MenuItem Command="Save" />
-                <MenuItem Header="Copy to clipboard" Click="Clipboard_Click"/>
+                <MenuItem Command="Copy" />
                 <Separator />
                 <MenuItem Header="_Exit" />
             </MenuItem>
             <MenuItem Header="_Edit">
-                <MenuItem Command="Cut" />
-                <MenuItem Command="Copy" />
-                <MenuItem Command="Paste" />
             </MenuItem>
         </Menu>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
             <DockPanel Grid.Column="0">
-                <ListView Name="DocOptions" Margin="5" Height="auto" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" >
+                <ListView Name="DocOptions" Margin="5" Height="auto" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <!--add child elements here-->
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <TextBlock Text="Segment: "/>
-                                    <TextBlock Text="{Binding name}" FontWeight="Bold" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <TextBlock Text="Contents: " />
-                                    <TextBlock Text="{Binding sampleString}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding sampleString}" FontWeight="Bold"/>
                                 </StackPanel>
                             </StackPanel>
                         </DataTemplate>
@@ -51,17 +45,13 @@
                 </ListView>
 
             </DockPanel>
-            <DockPanel Grid.Column="1">
+            <GridSplitter HorizontalAlignment="Center" 
+                  VerticalAlignment="Stretch" 
+                  Grid.Column="1" ResizeBehavior="PreviousAndNext"
+                  Width="1"/>
+            <DockPanel Grid.Column="2">
                 <ListBox Name="documentContent" Height="auto" Margin="5">
                 </ListBox>
-                <!--
-                <StackPanel Name="documentContents">
-                    
-                </StackPanel>
-                <StackPanel HorizontalAlignment="Right">
-                    <Button  Name="remove" Content="Add segment" Margin="5,5,5,5" Padding="2"/>
-                </StackPanel>
-                -->
             </DockPanel>
 
         </Grid>
