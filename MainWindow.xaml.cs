@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,7 +18,7 @@ namespace lewisstupidthingy
 		private string DRAG_SYMBOL = "☰  ";
 		private string BASE_COLOUR = "#FFFFFF";
 		private string ACCENT_COLOUR = "#DDDDDD";
-		public List<Segment> SegmentOptions { get; set; } = new List<Segment>();
+		public ObservableCollection<Segment> SegmentOptions { get; set; } = new ObservableCollection<Segment>();
 		public List<ListBoxItem> Document { get; set; } = new List<ListBoxItem>();
 		FileIO fileIO = new FileIO();
 		BrushConverter bc = new BrushConverter();
@@ -27,18 +28,21 @@ namespace lewisstupidthingy
 			InitializeComponent();
 			DocOptions.ItemsSource = SegmentOptions;
 			DocOptions.MouseDoubleClick += new MouseButtonEventHandler(AddSegment_Click);
-			//DocContents.ItemsSource = document;
 
-			//read the config file
+			LoadDoctions();
 
-			//string segName1 = "sample segment";
-			//string sampleSeg1 = "go to [@planet a, planet b] and do [@thing a, thing b]";
+		}
+
+		private void LoadDoctions()
+		{
+			SegmentOptions.Clear();
 
 			List<string> rawSegments = loadFile();
 
-			foreach(var rs in rawSegments)
+			foreach (var rs in rawSegments)
 			{
 				SegmentOptions.Add(new Segment(rs));
+				Console.WriteLine(rs);
 			}
 		}
 
@@ -99,9 +103,14 @@ namespace lewisstupidthingy
 			{
 				try
 				{
-					j++;
-					string line = j.ToString() + ". ";
+					string line = "";
 					StackPanel panel = lbi.Content as StackPanel;
+					//check the panel resources to see if it should be numbered or not
+					if (panel.FindResource("numbered").ToString() == "true")
+					{
+						j++;
+						line += j.ToString() + ". ";
+					}
 					foreach (UIElement element in panel.Children)
 					{
 						if(element.GetType() == typeof(ComboBox))
@@ -156,6 +165,16 @@ namespace lewisstupidthingy
 			dragBlock.MouseMove += new MouseEventHandler(DocItem_MouseMove);
 			stackPanel.Children.Add(dragBlock);
 
+			//numbering item
+			if (seg.numbered)
+			{
+				stackPanel.Resources.Add("numbered", "true");
+			}
+			else
+			{
+				stackPanel.Resources.Add("numbered", "false");
+			}
+
 			stackPanel.Orientation = Orientation.Horizontal;
 			foreach(string subsegment in seg.subSegments)
 			{
@@ -173,7 +192,7 @@ namespace lewisstupidthingy
 						comboOptions.Add(items[i].Trim());
 					}
 					ComboBox comboBox = new ComboBox();
-					comboBox.ItemsSource = items;
+					comboBox.ItemsSource = comboOptions;
 					stackPanel.Children.Add(comboBox);
 				}
 				//subsegment is a textblock
@@ -192,8 +211,9 @@ namespace lewisstupidthingy
 					stackPanel.Children.Add(textBlock);
 				}
 			}
-			newItem.Content = stackPanel;
 			newItem.MouseRightButtonUp += new MouseButtonEventHandler(DocumentContentRemove_Click);
+			newItem.Content = stackPanel;
+			
 			return newItem;
 		}
 
@@ -275,6 +295,17 @@ namespace lewisstupidthingy
 
 		private void DocumentContentRemove_Click(object sender, MouseButtonEventArgs e)
 		{
+			TextBox tb = e.OriginalSource as TextBox;
+			Console.WriteLine(tb==null);
+			Console.WriteLine(e.OriginalSource.GetType());
+			Console.WriteLine(typeof(TextBox));
+			//this is clearly not the way this should be done but I'm really struggling to find any documentation so fuck this shit gonna come back and do it correctly later
+			//TODO fix this when it isn't 2am 
+			if (e.OriginalSource.GetType().ToString() == "System.Windows.Controls.TextBoxView")
+			{
+				Console.WriteLine("textbox");
+				return;
+			}
 			try
 			{
 				Document.Remove(sender as ListBoxItem);
@@ -342,6 +373,11 @@ namespace lewisstupidthingy
 				concatLines += line + "\n";
 			}
 			System.Windows.Clipboard.SetText(concatLines);
+		}
+
+		private void ReloadClick(object sender, RoutedEventArgs e)
+		{
+			LoadDoctions();
 		}
 	}
 }

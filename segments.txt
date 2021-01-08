@@ -2,12 +2,12 @@
 #lines in segments that START with a '#' are comments and will not be parsed
 
 #example
-#sample segment - go to [@planet a, planet b] and do [@thing a, thing b]
-#name - text [@dropdown option 1, dropdown option 2, ...] more text [~ default text in text input] more text
-#the name of the segment must be followed by a '-' this seperates the name from segment
-#special views (dropdowns and text input) are denoted by [] the first character must be @ for a dropdown and ~ for text input
+#text [@dropdown option 1, dropdown option 2, ...] more text [~ default text in text input] more text
+#special views (dropdowns and text input) are denoted by | the first character must be @ for a dropdown and ~ for text input
 
-planet segment - go to [@planet a, planet b] and do [@thing a, thing b]
-kill segment - kill [@creature a, creature b]
-action segment - do action [~] and do [@thing a, thing b]
-empty segment - [~]
+go to |@planet a, planet b| and do |@thing a, thing b|
+kill |@creature a, creature b|
+do action |~| and do |@thing a, thing b|
+|~|
+this is a really long segement lorum ipsum dolar sit amet patrio mori terra ferum halio desdat petrator 
+

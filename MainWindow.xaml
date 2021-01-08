@@ -19,6 +19,8 @@
                 <MenuItem Command="Save" />
                 <MenuItem Command="Copy" />
                 <Separator />
+                <MenuItem Header="_Reload Config" Click="ReloadClick"/>
+                <Separator />
                 <MenuItem Header="_Exit" />
             </MenuItem>
             <MenuItem Header="_Edit">
