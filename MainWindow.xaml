@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:lewisstupidthingy"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="List Segmenting Tool" Height="450" Width="800">
     <Window.CommandBindings>
         <CommandBinding Command="New" CanExecute="New_CanExecute" Executed="New_Executed" />
         <CommandBinding Command="Save" CanExecute="Save_CanExecute" Executed="Save_Executed" />
@@ -39,6 +39,7 @@
                         <DataTemplate>
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding numberedText}" Foreground="Blue" FontWeight="Bold"/>
                                     <TextBlock Text="{Binding sampleString}" FontWeight="Bold"/>
                                 </StackPanel>
                             </StackPanel>

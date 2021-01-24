@@ -19,6 +19,7 @@ namespace lewisstupidthingy
 		private string BASE_COLOUR = "#FFFFFF";
 		private string ACCENT_COLOUR = "#DDDDDD";
 		public ObservableCollection<Segment> SegmentOptions { get; set; } = new ObservableCollection<Segment>();
+		public List<Segment> AvailableSubSegments = new List<Segment>();
 		public List<ListBoxItem> Document { get; set; } = new List<ListBoxItem>();
 		FileIO fileIO = new FileIO();
 		BrushConverter bc = new BrushConverter();
@@ -41,7 +42,15 @@ namespace lewisstupidthingy
 
 			foreach (var rs in rawSegments)
 			{
-				SegmentOptions.Add(new Segment(rs));
+				Segment newSegment = new Segment(rs, AvailableSubSegments);
+				if (newSegment.isSubSegment)
+				{
+					AvailableSubSegments.Add(newSegment);
+				}
+				else
+				{
+					SegmentOptions.Add(newSegment);
+				}
 				Console.WriteLine(rs);
 			}
 		}

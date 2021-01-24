@@ -12,23 +12,61 @@ namespace lewisstupidthingy
 		public string sampleString { get; set; }
 		public List<string> subSegments { get; set; }
 		public bool numbered { get; set; }
+		public bool isSubSegment;
+		public string numberedText { get; set; }
 
-		public Segment(string rawSegment)
+		public Segment(string rawSegment, List<Segment> availableSubSegments)
 		{
+			subSegments = new List<string>();
+			//none numbered
 			if (rawSegment[0] == ':')
 			{
 				numbered = false;
+				numberedText = "";
 				rawSegment = rawSegment.Substring(1);
 			}
 			else
 			{
 				numbered = true;
+				numberedText = "# ";
 			}
+
+			//subseg list
+			if (rawSegment[0] == '@')
+			{
+				isSubSegment = true;
+			}
+			else
+			{
+				isSubSegment = false;
+			}
+
+
 			char[] charSeparators = new char[] { '|' };
 			string[] subsegments = rawSegment.Split(charSeparators);
 
-			sampleString = rawSegment;
-			subSegments = new List<string>(subsegments);
+			foreach(string subseg in subsegments)
+			{
+				Console.WriteLine(subseg);
+				string[] stringSeperators = new string[] { "@@" };
+				string[] split = subseg.Split(stringSeperators, StringSplitOptions.None);
+				try
+				{
+					split[1] = availableSubSegments[int.Parse(split[1])].sampleString;
+				}
+				catch(Exception excpt)
+				{
+					Console.WriteLine("couldn't parse");
+				}
+				subSegments.Add(string.Concat(split));
+			}
+			sampleString = string.Concat(subSegments);
+			
+		}
+
+		private string insertAvailable(string subseg)
+		{
+			return "";
 		}
 
 
