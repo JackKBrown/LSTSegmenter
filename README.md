@@ -22,7 +22,8 @@
 
 ##TODO LIST
 
-2. 
+1. for some reason prewritten lists are limited to 16.
+2. LST needs a number indicator on the right side too. so you can tell which added segments are numbered
 3. Option to in notepad make it so certain steps get highlighted on the left in some form based on what the previous step was (maybe swap over to xml?)
 4. Working drop-down searching
 6. Option to Auto alphabetise drop down lists
