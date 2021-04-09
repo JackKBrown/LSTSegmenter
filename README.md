@@ -29,6 +29,15 @@
 6. Option to Auto alphabetise drop down lists
 7. Save/load groups of steps (save all the segments via a parse out function to a .lst file then when loading the file just reparse those segments?)
 8. profanity checker
+9. paste in text on multiple lines
+So.... Say I want to add the step:
+Add to your user.cfg:
+[Line 1]
+[Line 2]
+[Line 3]
 
+....and I have the 3 lines copied to clipboard, I want to be able to pastr it into lst and it format how it was copied (each line on its own line, not numbered)
+
+10. Be able to set what number it starts counting from... So if I have half the steps somewhere else and just need to alter the last half, it counts correct
 ###Potential Big Changes
 * Undo redo functionality.
