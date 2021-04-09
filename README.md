@@ -29,7 +29,7 @@
 6. Option to Auto alphabetise drop down lists
 7. Save/load groups of steps (save all the segments via a parse out function to a .lst file then when loading the file just reparse those segments?)
 8. profanity checker
-9. paste in text on multiple lines
+9. Paste in text on multiple lines
 So.... Say I want to add the step:
 Add to your user.cfg:
 [Line 1
